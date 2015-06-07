@@ -1,0 +1,48 @@
+.wrap
+{
+    background: url(../img/pregnancy.jpg);
+}
+.site-index
+{
+    background-color: rgba(255,255,255,0.3);
+    z-index:-100;
+}
+.btn-big_sized
+{
+    width:30%;
+}
+.paddings
+{
+    padding-left: 5%;
+    padding-right:  5%; 
+}
+.footer
+{
+    background-color: rgba(255,255,255,0.3);
+    z-index:100;
+}
+.navbar
+{
+    //background-color: rgba(15,122,161,0.3);
+}
+.navbar-inverse .navbar-nav > li > a{
+    color:#FFF;
+}
+.navbar-brand
+{
+     color:#FFF !important;
+}
+.site-login{
+    background-color: rgba(255,255,255,0.5);
+    z-index:100;
+    //padding-left: 5%;
+    //padding-right: 5%;
+    padding: 1% 5% 1% 5%;
+}
+.jumbotron>p
+{
+    padding-top: 15%;
+}
+.no-padding{
+    padding-top: 1% !important;
+}
