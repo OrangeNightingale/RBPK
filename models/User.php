@@ -2,76 +2,113 @@
 
 namespace app\models;
 
-class User extends \yii\base\Object implements \yii\web\IdentityInterface
+use Yii;
+
+
+/**
+ * This is the model class for table.
+ *
+ * @property integer $id
+ * @property integer $active
+ * @property string $name
+ * @property string $email
+ * @property string $passHash
+
+ */
+class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
 {
-    public $id;
-    public $username;
-    public $password;
-    public $authKey;
-    public $accessToken;
-
-    private static $users = [
-        '100' => [
-            'id' => '100',
-            'username' => 'admin',
-            'password' => 'admin',
-            'authKey' => 'test100key',
-            'accessToken' => '100-token',
-        ],
-        '101' => [
-            'id' => '101',
-            'username' => 'demo',
-            'password' => 'demo',
-            'authKey' => 'test101key',
-            'accessToken' => '101-token',
-        ],
-    ];
-
     /**
      * @inheritdoc
      */
-    public static function findIdentity($id)
+
+    public $password;
+    public $confirmation;
+
+
+    public static function tableName()
     {
-        return isset(self::$users[$id]) ? new static(self::$users[$id]) : null;
+        return 'users';
     }
 
     /**
      * @inheritdoc
      */
+    public function rules()
+    {
+        return [
+            [['name', 'email', 'passHash'], 'required', 'message'=>'Поле "{attribute}" не может быть пустым.'],
+            [['name', 'email', 'passHash'], 'string', 'max' => 255],
+            ['name', 'match', 'pattern'=>'/[a-zA-Zа-яёА-Я][a-zA-Zа-яёА-Я\\s-]+$/', 'message' => 'Пожалуйста, введите корректное имя'],
+            ['email', 'email', 'message' => 'Пожалуйста, введите корректный email'],
+            ['email', 'validateEmail'],
+            ['confirmation', 'compare', 'compareAttribute'=>'password', 'message'=>"Подтверждение пароля не совпадает с паролем."]
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function attributeLabels()
+    {
+        return [
+            'id' => 'ID',
+            'name' => 'Имя',
+            'email' => 'Email',
+            'passHash' => 'Хэш пароля',
+            
+        ];
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+   
+
+    public static function findByEmail($email)
+    {
+        $user = User::find()->where(['email' => $email])->one();
+        return $user;
+    }
+
+    public function checkPassword($password)
+    {
+        return $this->getAttribute('passHash') == md5($password);
+    }
+
+    public function updateLc()
+    {
+        if($this->password!='')
+        {
+            $this->passHash = md5($this->password);
+        }
+        return $this->save();
+    }
+
+    public function validateEmail($attribute, $params)
+    {
+        foreach (User::find()->where(['email'=>$this->email])->all() as $value) {
+            if($value->id != $this->id)
+            {
+                $this->addError('email','Данный email уже используется.');
+            }
+        }
+
+    }
+
     public static function findIdentityByAccessToken($token, $type = null)
     {
-        foreach (self::$users as $user) {
-            if ($user['accessToken'] === $token) {
-                return new static($user);
-            }
-        }
-
-        return null;
+        $user = User::find()->where(['passHash' => $token])->one();
+        return $user;
     }
 
-    /**
-     * Finds user by username
-     *
-     * @param  string      $username
-     * @return static|null
-     */
-    public static function findByUsername($username)
-    {
-        foreach (self::$users as $user) {
-            if (strcasecmp($user['username'], $username) === 0) {
-                return new static($user);
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getId()
     {
-        return $this->id;
+        return $this->id + 3010;
     }
 
     /**
@@ -79,7 +116,7 @@ class User extends \yii\base\Object implements \yii\web\IdentityInterface
      */
     public function getAuthKey()
     {
-        return $this->authKey;
+        return $this->email;
     }
 
     /**
@@ -87,17 +124,32 @@ class User extends \yii\base\Object implements \yii\web\IdentityInterface
      */
     public function validateAuthKey($authKey)
     {
-        return $this->authKey === $authKey;
+        return $this->email === $authKey;
     }
 
-    /**
-     * Validates password
-     *
-     * @param  string  $password password to validate
-     * @return boolean if password provided is valid for current user
-     */
-    public function validatePassword($password)
+     public static function findIdentity($id)
     {
-        return $this->password === $password;
+        $user = User::find()->where(['id' => $id - 3010])->one();
+        return $user;
+    }
+	
+	public function getWeeks()
+    {
+        //return $this->hasOne(Weeks::className(), ['week_id' => 'week_id']);
+		$weeks = Weeks::find()->orderBy('week_id');
+		return $weeks;
+    }
+	
+	public function getFriends()
+    {
+        return $this->hasMany(User::className(), ['id' => 'id']);
+    }
+	
+		public function getNotes()
+    {
+        //return $this->hasOne(Weeks::className(), ['week_id' => 'week_id']);
+		//$notes = Notes::find()->orderBy('note_id');
+		return $this->hasMany(Notes::className(), ['user_id' => 'id']);
+		return $notes;
     }
 }

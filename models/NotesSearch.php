@@ -6,10 +6,8 @@ use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use app\models\Notes;
-session_start();
-/**
- * NotesSearch represents the model behind the search form about `app\models\Notes`.
- */
+
+
 class NotesSearch extends Notes
 {
     /**
@@ -18,8 +16,8 @@ class NotesSearch extends Notes
     public function rules()
     {
         return [
-            [['id'], 'integer'],
-            [['google_id', 'name', 'note'], 'safe'],
+            [['note_id', 'user_id'], 'integer'],
+            [['note_text'], 'safe'],
         ];
     }
 
@@ -47,19 +45,16 @@ class NotesSearch extends Notes
             'query' => $query,
         ]);
 
-        $this->load($params);
-
-        if (!$this->validate()) {
-            // uncomment the following line if you do not want to return any records when validation fails
-            // $query->where('0=1');
+        if (!($this->load($params) && $this->validate())) {
             return $dataProvider;
         }
 
         $query->andFilterWhere([
-            'id' => $this->id,
+            'week_id' => $this->note_id,
+            'user_id' => $this->user_id,
+            
         ]);
 
-        $query->andFilterWhere(['like', 'google_id', $_SESSION['user']['id']]);
 
         return $dataProvider;
     }

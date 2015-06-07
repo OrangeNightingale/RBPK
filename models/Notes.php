@@ -4,14 +4,7 @@ namespace app\models;
 
 use Yii;
 
-/**
- * This is the model class for table "notice".
- *
- * @property string $id
- * @property string $google_id
- * @property string $name
- * @property string $note
- */
+
 class Notes extends \yii\db\ActiveRecord
 {
     /**
@@ -19,7 +12,7 @@ class Notes extends \yii\db\ActiveRecord
      */
     public static function tableName()
     {
-        return 'notice';
+        return 'notes';
     }
 
     /**
@@ -28,8 +21,9 @@ class Notes extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name', 'note'], 'string'],
-            [['google_id'], 'string', 'max' => 255]
+            [['note_text', 'user_id'], 'required'],
+            [['user_id'], 'integer'],
+            [['note_text'], 'string', 'max' => 500]
         ];
     }
 
@@ -39,10 +33,24 @@ class Notes extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'id' => 'ID',
-            'google_id' => 'Google ID',
-            'name' => 'Name',
-            'note' => 'Note',
+            'note_id' => 'Note ID',
+            'note_text' => 'Note Text',
+            'user_id' => 'User ID',
+			'foto' => 'Foto',
         ];
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getUser()
+    {
+        return $this->hasOne(Users::className(), ['id' => 'user_id']);
+    }
+	
+	 
+    public function getNotes()
+    {
+        return $this->hasOne(Notes::className(), ['note_id' => 'note_id']);
     }
 }
